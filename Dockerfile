@@ -1,9 +1,16 @@
 FROM alpine:3.6
 MAINTAINER Jermine <Jermine.hu@qq.com>
 
-EXPOSE 22 3000
+ENV USER git
+ENV GITEA_CUSTOM /data/gitea
+ENV GODEBUG=netdns=go
 
-RUN apk --no-cache add \
+VOLUME ["/data"]
+
+EXPOSE 22 3000
+COPY docker /
+COPY gitea /app/gitea/gitea
+RUN chmod +x /app/gitea/gitea && apk --no-cache add \
     su-exec \
     ca-certificates \
     sqlite \
@@ -13,11 +20,11 @@ RUN apk --no-cache add \
     s6 \
     curl \
     openssh \
-    tzdata
-RUN addgroup \
-    -S -g 1000 \
+    tzdata && \
+    addgroup \
+    -S -g 1000 \ 
     git && \
-  adduser \
+    adduser \
     -S -H -D \
     -h /data/git \
     -s /bin/bash \
@@ -26,16 +33,5 @@ RUN addgroup \
     git && \
   echo "git:$(dd if=/dev/urandom bs=24 count=1 status=none | base64)" | chpasswd
 
-ENV USER git
-ENV GITEA_CUSTOM /data/gitea
-ENV GODEBUG=netdns=go
-
-VOLUME ["/data"]
-
 ENTRYPOINT ["/usr/bin/entrypoint"]
 CMD ["/bin/s6-svscan", "/etc/s6"]
-
-COPY docker /
-COPY gitea /app/gitea/gitea
-RUN chmod +x /app/gitea/gitea
-
