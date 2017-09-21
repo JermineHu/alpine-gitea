@@ -37,3 +37,5 @@ CMD ["/bin/s6-svscan", "/etc/s6"]
 
 COPY docker /
 COPY gitea /app/gitea/gitea
+RUN chmod +x /app/gitea/gitea
+
