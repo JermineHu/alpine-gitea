@@ -10,7 +10,9 @@ VOLUME ["/data"]
 EXPOSE 22 3000
 COPY docker /
 COPY gitea /app/gitea/gitea
-RUN chmod +x /app/gitea/gitea && apk --no-cache add \
+RUN chmod +x /app/gitea/gitea && \
+    chmod +x /usr/bin/entrypoint && \
+    apk --no-cache add \
     su-exec \
     ca-certificates \
     sqlite \
