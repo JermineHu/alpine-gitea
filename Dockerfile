@@ -1,38 +1,15 @@
-FROM alpine:3.6
+FROM jermine/git
 MAINTAINER Jermine <Jermine.hu@qq.com>
-
-ENV USER git
-ENV GITEA_CUSTOM /data/gitea
-ENV GODEBUG=netdns=go
-
-VOLUME ["/data"]
-
-EXPOSE 22 3000
-COPY docker /
-COPY gitea /app/gitea/gitea
-COPY conf /app/gitea/conf
-RUN apk --no-cache add \
-    su-exec \
-    ca-certificates \
-    sqlite \
-    bash \
-    git \
-    linux-pam \
-    s6 \
-    curl \
-    openssh \
-    tzdata && \
-    addgroup \
-    -S -g 1000 \ 
-    git && \
-    adduser \
-    -S -H -D \
-    -h /data/git \
-    -s /bin/bash \
-    -u 1000 \
-    -G git \
-    git && \
-  echo "git:$(dd if=/dev/urandom bs=24 count=1 status=none | base64)" | chpasswd
-
-ENTRYPOINT ["/usr/bin/entrypoint"]
-CMD ["/bin/s6-svscan", "/etc/s6"]
+RUN apk add openssh-keygen --no-cache
+RUN apk add gitea=1.1.4-r1 \
+    --repository http://dl-cdn.alpinelinux.org/alpine/edge/community \
+    --no-cache
+# variable USER used by gitea to check for current user(!)
+ENV GITEA_WORK_DIR=/var/lib/gitea USER=gitea
+RUN mkdir $GITEA_WORK_DIR/custom/conf && \
+    cp /etc/gitea/app.ini $GITEA_WORK_DIR/custom/conf/app.ini && \
+    chown -R $USER:www-data $GITEA_WORK_DIR/custom/conf
+VOLUME $GITEA_WORK_DIR /var/log/gitea
+WORKDIR $GITEA_WORK_DIR
+USER $USER
+ENTRYPOINT ["gitea", "web"]
