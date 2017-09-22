@@ -10,6 +10,7 @@ VOLUME ["/data"]
 EXPOSE 22 3000
 COPY docker /
 COPY gitea /app/gitea/gitea
+COPY conf /app/gitea/conf
 RUN apk --no-cache add \
     su-exec \
     ca-certificates \
