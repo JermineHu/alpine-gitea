@@ -1,15 +1,45 @@
-FROM jermine/git
+FROM gitea/gitea:1.9.0 as gitea-env
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && apk update && apk add upx binutils
+RUN apk add --no-cache tzdata && \
+        echo ${TIME_ZONE} > /etc/timezone && \
+        ln -sf /usr/share/zoneinfo/${TIME_ZONE} /etc/timezone
+RUN cd /app && strip --strip-unneeded gitea && upx -9 gitea
+FROM alpine:edge
 MAINTAINER Jermine <Jermine.hu@qq.com>
-RUN apk add openssh-keygen --no-cache
-RUN apk add gitea=1.1.4-r1 \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/community \
-    --no-cache
-# variable USER used by gitea to check for current user(!)
-ENV GITEA_WORK_DIR=/var/lib/gitea USER=gitea
-RUN mkdir $GITEA_WORK_DIR/custom/conf && \
-    cp /etc/gitea/app.ini $GITEA_WORK_DIR/custom/conf/app.ini && \
-    chown -R $USER:www-data $GITEA_WORK_DIR/custom/conf
-VOLUME $GITEA_WORK_DIR /var/log/gitea
-WORKDIR $GITEA_WORK_DIR
-USER $USER
-ENTRYPOINT ["gitea", "web"]
+ENV TIME_ZONE Asia/Shanghai
+ENV USER git
+ENV GITEA_CUSTOM /data/gitea
+
+RUN apk --no-cache add \
+    bash \
+    ca-certificates \
+    curl \
+    gettext \
+    git \
+    linux-pam \
+    dropbear-ssh \
+    s6 \
+    su-exec
+    
+RUN addgroup \
+    -S -g 1000 \
+    git && \
+  adduser \
+    -S -H -D \
+    -h /data/git \
+    -s /bin/bash \
+    -u 1000 \
+    -G git \
+    git && \
+  echo "git:$(dd if=/dev/urandom bs=24 count=1 status=none | base64)" | chpasswd
+
+VOLUME ["/data"]
+WORKDIR /data
+ENTRYPOINT ["/usr/bin/entrypoint"]
+CMD ["/bin/s6-svscan", "/etc/s6"]
+
+COPY --from=gitea-env  /etc /etc
+COPY --from=gitea-env  /usr/bin/entrypoint /usr/bin/entrypoint 
+COPY --from=gitea-env /app/gitea/gitea /usr/local/bin/gitea
+COPY --from=gitea-env /etc/timezone /etc/timezone
+COPY --from=gitea-env /usr/share/zoneinfo/${TIME_ZONE} /etc/localtime
