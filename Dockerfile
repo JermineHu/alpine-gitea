@@ -17,7 +17,7 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositorie
     gettext \
     git \
     linux-pam \
-    dropbear-ssh \
+    openssh \
     s6 \
     su-exec
     
