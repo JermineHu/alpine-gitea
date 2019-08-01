@@ -10,7 +10,7 @@ ENV TIME_ZONE Asia/Shanghai
 ENV USER git
 ENV GITEA_CUSTOM /data/gitea
 
-RUN apk --no-cache add \
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories && apk update && apk --no-cache add \
     bash \
     ca-certificates \
     curl \
