@@ -40,6 +40,7 @@ CMD ["/bin/s6-svscan", "/etc/s6"]
 
 COPY --from=gitea-env  /etc /etc
 COPY --from=gitea-env  /usr/bin/entrypoint /usr/bin/entrypoint 
-COPY --from=gitea-env /app/gitea/gitea /usr/local/bin/gitea
+COPY --from=gitea-env /app/gitea/gitea /app/gitea/gitea
 COPY --from=gitea-env /etc/timezone /etc/timezone
 COPY --from=gitea-env /usr/share/zoneinfo/${TIME_ZONE} /etc/localtime
+RUN ln -s /app/gitea/gitea /usr/local/bin/gitea
