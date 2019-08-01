@@ -3,7 +3,7 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositorie
 RUN apk add --no-cache tzdata && \
         echo ${TIME_ZONE} > /etc/timezone && \
         ln -sf /usr/share/zoneinfo/${TIME_ZONE} /etc/timezone
-RUN cd /app && strip --strip-unneeded gitea && upx -9 gitea
+RUN cd /app/gitea && strip --strip-unneeded gitea && upx -9 gitea
 FROM alpine:edge
 MAINTAINER Jermine <Jermine.hu@qq.com>
 ENV TIME_ZONE Asia/Shanghai
